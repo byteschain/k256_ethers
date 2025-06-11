@@ -1,0 +1,10 @@
+[package]
+name = "k256_keygen"
+version = "0.1.0"
+edition = "2024"
+[dependencies]
+k256 = { version = "0.13", features = ["ecdsa"] }
+ethers = { version = "2", default-features = false }
+aes-gcm = "0.10"
+rand_core = "0.9.3"
+hex = "0.4"
