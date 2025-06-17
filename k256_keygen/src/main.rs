@@ -1,18 +1,17 @@
 use aes_gcm::{
-    aead::generic_array::GenericArray,
-    aead::{Aead, KeyInit, OsRng},
     Aes256Gcm, Nonce,
+    aead::generic_array::GenericArray,
+    aead::{Aead, KeyInit,OsRng},
 };
 use ethers::core::utils::keccak256;
-use hex::{decode as hex_decode, encode as hex_encode, ToHex};
-use k256::ecdsa::SigningKey;
+use hex::{ToHex, decode as hex_decode, encode as hex_encode};
 use k256::EncodedPoint;
-use rand_core::RngCore;
+use k256::ecdsa::SigningKey;
+ use aes_gcm::aead::rand_core::RngCore;
 //use secp256k1::{PublicKey, Secp256k1, SecretKey};
-use std::str::FromStr;
-
 use alloy_primitives::Address;
-use reth_network_peers::{id2pk, pk2id, PeerId};
+use reth_network_peers::{PeerId, id2pk, pk2id};
+use std::str::FromStr;
 /// AES-GCM 加密私钥
 fn encrypt_hex(key_hex: &str, plaintext: &str) -> (String, String) {
     let key_bytes = hex_decode(key_hex).expect("Invalid hex key");
@@ -25,6 +24,17 @@ fn encrypt_hex(key_hex: &str, plaintext: &str) -> (String, String) {
         .expect("encryption failed");
 
     (hex_encode(ciphertext), hex_encode(nonce))
+}
+
+/// 生成随机的 AES-256 密钥和 96-bit Nonce（用于 AES-GCM）
+fn generate_aes_key_and_nonce() -> (String, String) {
+    let mut key = [0u8; 32]; // 256-bit AES key
+    let mut nonce = [0u8; 12]; // 96-bit AES-GCM nonce
+    let mut rng = OsRng; // 实例化随机数生成器
+    rng.fill_bytes(&mut key);
+    rng.fill_bytes(&mut nonce);
+
+    (hex_encode(key), hex_encode(nonce))
 }
 
 /// AES-GCM 解密
@@ -81,4 +91,9 @@ fn main() {
 
     assert_eq!(decrypted, private_key_hex);
     println!("🎉 验证成功：解密后私钥一致！");
+
+    println!("================= 5. 生成 AES 密钥和 Nonce =================");
+    let (aes_key_hex, nonce_hex) = generate_aes_key_and_nonce();
+    println!("🧬 AES Key (hex): {}", aes_key_hex);
+    println!("🧂 Nonce: {}", nonce_hex);
 }
