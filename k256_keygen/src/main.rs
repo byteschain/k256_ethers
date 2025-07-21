@@ -1,16 +1,16 @@
+use aes_gcm::aead::rand_core::RngCore;
 use aes_gcm::{
-    Aes256Gcm, Nonce,
     aead::generic_array::GenericArray,
-    aead::{Aead, KeyInit,OsRng},
+    aead::{Aead, KeyInit, OsRng},
+    Aes256Gcm, Nonce,
 };
 use ethers::core::utils::keccak256;
-use hex::{ToHex, decode as hex_decode, encode as hex_encode};
-use k256::EncodedPoint;
+use hex::{decode as hex_decode, encode as hex_encode, ToHex};
 use k256::ecdsa::SigningKey;
- use aes_gcm::aead::rand_core::RngCore;
+use k256::EncodedPoint;
 //use secp256k1::{PublicKey, Secp256k1, SecretKey};
 use alloy_primitives::Address;
-use reth_network_peers::{PeerId, id2pk, pk2id};
+use reth_network_peers::{id2pk, pk2id, PeerId};
 use std::str::FromStr;
 /// AES-GCM 加密私钥
 fn encrypt_hex(key_hex: &str, plaintext: &str) -> (String, String) {
@@ -52,6 +52,13 @@ fn decrypt_hex(key_hex: &str, ciphertext_hex: &str, nonce_hex: &str) -> String {
 }
 
 fn main() {
+    for i in 1..=30 {
+        println!("================= 第 {} 次循环 =================", i);
+        run_once();
+    }
+}
+
+fn run_once() {
     println!("================= 1. 生成密钥和地址 =================");
     let signing_key = SigningKey::random(&mut OsRng);
     let verify_key = signing_key.verifying_key();
