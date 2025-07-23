@@ -16,7 +16,7 @@ use std::str::FromStr;
 fn encrypt_hex(key_hex: &str, plaintext: &str) -> (String, String) {
     let key_bytes = hex_decode(key_hex).expect("Invalid hex key");
     let cipher = Aes256Gcm::new(GenericArray::from_slice(&key_bytes));
-    let nonce_hex = "80e6683397afd4967c21cde0"; // 注意：生产应使用随机 nonce
+    let nonce_hex = "bc09b87cb219f1c0b62a145c"; // 注意：生产应使用随机 nonce
     let nonce = hex_decode(nonce_hex).expect("Invalid nonce hex");
 
     let ciphertext = cipher
@@ -52,7 +52,7 @@ fn decrypt_hex(key_hex: &str, ciphertext_hex: &str, nonce_hex: &str) -> String {
 }
 
 fn main() {
-    for i in 1..=30 {
+    for i in 1..=23 {
         println!("================= 第 {} 次循环 =================", i);
         run_once();
     }
@@ -77,17 +77,20 @@ fn run_once() {
 
     let secret_key = secp256k1::SecretKey::from_slice(&secret_key_bytes).unwrap();
     let public_key = secp256k1::PublicKey::from_secret_key(&secp, &secret_key);
-    let peer_id = pk2id(&public_key);
+
+    let peer_id = PeerId::from_slice(&public_key.serialize_uncompressed()[1..]);
+
+    //let peer_id = pk2id(&public_key);
     println!("🧑‍🤝‍🧑 Peer ID: {}", peer_id);
 
-    let recovered_pubkey = id2pk(peer_id).expect("恢复 pubkey 失败");
-    println!("🔁 Recovered Public Key: {}", recovered_pubkey);
+    // let recovered_pubkey = id2pk(peer_id).expect("恢复 pubkey 失败");
+    // println!("🔁 Recovered Public Key: {}", recovered_pubkey);
 
     let recovered_address = Address::from_raw_public_key(peer_id.as_slice());
     println!("🏠 Recovered Address: {}", recovered_address);
 
     println!("================= 3. 加密私钥 =================");
-    let aes_key_hex = "967c2d7997b8272f24b2a9f5b9df49925c181b4ccb29ce05127875d2ff62e9ee"; // 256-bit
+    let aes_key_hex = "55482b0d898033d1312408af210ef6be221c43d8ea1ddcf27ab660cb7c0057c1"; // 256-bit
     let (ciphertext_hex, nonce_hex) = encrypt_hex(aes_key_hex, &private_key_hex);
     println!("🔒 Encrypted Private Key (hex): {}", ciphertext_hex);
     println!("🧂 Nonce: {}", nonce_hex);
